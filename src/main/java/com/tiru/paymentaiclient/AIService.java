@@ -65,30 +65,55 @@ public class AIService {
             if (gatewayDetails.startsWith("No gateway response found")) {
                 return gatewayDetails;
             }
-
+            String riskLevel = classifyRisk(transactionDetails, gatewayDetails);
             return chatClient.prompt()
                     .system("""
-                        You are a banking payment investigation assistant.
-                        Analyze only the supplied evidence.
-                        Explain transaction status, debit status,
-                        gateway response, gateway reference,
-                        discrepancies, and recommended next steps.
-                        Never invent information or claim a refund was executed.
-                        """)
+    You are a banking payment investigation assistant.
+
+    Use only supplied database records as verified facts.
+    Distinguish confirmed facts from possible explanations.
+    A gateway TIMEOUT does not prove the merchant server failed.
+    If the account is DEBITED and the transaction FAILED or uncertain,
+    do not recommend an immediate retry.
+    Recommend checking transaction status and reconciliation records first.
+    Never claim a refund or reversal occurred unless verified.
+    Explain discrepancies clearly and recommend safe next steps.
+    Always include transaction status, debit status, gateway response,
+    and gateway reference when available.
+    If records are missing, clearly state that the transaction
+    cannot be verified.
+
+    Risk classification:
+    - HIGH RISK: Transaction FAILED while account status is DEBITED.
+    - INVESTIGATION REQUIRED: Gateway TIMEOUT or transaction PENDING.
+    - NORMAL: Transaction SUCCESS and gateway response APPROVED.
+    - If multiple conditions apply, prioritize HIGH RISK.
+    - Explain the reason for the classification.
+    - Do not treat this classification as proof of fraud.
+    """)
                     .user("""
-                        Investigate transaction %s.
+    Investigate transaction %s.
 
-                        BANK TRANSACTION:
-                        %s
+    CUSTOMER CONCERN:
+    %s
 
-                        PAYMENT GATEWAY:
-                        %s
+    BANK TRANSACTION:
+    %s
 
-                        Include both bank and gateway details in your report.
-                        """.formatted(
-                            transactionId,
-                            transactionDetails,
-                            gatewayDetails))
+    PAYMENT GATEWAY:
+    %s
+
+    Analyze the customer's concern using the supplied evidence.
+    Explain discrepancies and recommend safe next steps.
+    Include both bank and gateway details.
+    Never invent facts or claim a refund was executed.
+    JAVA-CALCULATED RISK LEVEL: %s
+    """.formatted(
+        transactionId,
+        question,
+        transactionDetails,
+        gatewayDetails,
+        riskLevel))
                     .call()
                     .content();
 
@@ -98,4 +123,27 @@ public class AIService {
                     + transactionId + " due to a system error.";
         }
     }
+
+    private String classifyRisk(String transactionDetails, String gatewayDetails) {
+String transaction = transactionDetails.toUpperCase();
+String gateway = gatewayDetails.toUpperCase();
+
+boolean debited = transaction.contains("DEBITED")
+        && !transaction.contains("NOT DEBITED");
+
+if (transaction.contains("FAILED") && debited) {
+    return "HIGH RISK";
+}
+
+if (transaction.contains("PENDING") || gateway.contains("TIMEOUT")) {
+    return "INVESTIGATION REQUIRED";
+}
+
+if (transaction.contains("SUCCESS") && gateway.contains("APPROVED")) {
+    return "NORMAL";
+}
+
+return "INVESTIGATION REQUIRED";
+
+}
 }
