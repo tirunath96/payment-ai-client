@@ -61,3 +61,8 @@ Example local URL:
 ## Purpose
 
 This project demonstrates Spring Boot REST API development, MCP tool integration, local LLM integration, and evidence-based payment investigation.
+
+## Related Repositories
+
+- [MCP Server & Database](https://github.com/tirunath96/java-local-ai)
+- [React Dashboard](https://github.com/tirunath96/payment-ai-ui)
