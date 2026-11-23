@@ -1,68 +1,92 @@
 # Payment AI Client
 
-A Spring Boot application that connects an AI model with payment investigation tools exposed by an MCP server.
+An AI-powered Payment Operations Agent built using Java, Spring Boot, Spring AI, and Model Context Protocol (MCP).
 
-## Features
+The application investigates payment failures, retrieves transaction and gateway information, and helps identify possible causes and next steps.
 
-- Connects to an MCP server and discovers available tools
-- Retrieves payment transaction and gateway details
-- Uses Ollama with Qwen 2.5 locally for AI-assisted investigation
-- Classifies payment investigation risk
-- Exposes a REST API for the React dashboard
+## Overview
+
+The Payment AI Client acts as the AI integration layer between the application and the Payment MCP Server.
+
+It enables intelligent payment investigation using locally hosted Large Language Models (LLMs).
 
 ## Technology Stack
 
 - Java 21
-- Spring Boot 4.1.2
-- Spring AI 2.0.1
+- Spring Boot
+- Spring AI
+- Ollama
+- Qwen 2.5 (3B)
 - Model Context Protocol (MCP)
-- Ollama — Qwen 2.5
+- PostgreSQL
 - Maven
+- REST APIs
 
 ## Architecture
 
-React Dashboard → Spring Boot AI Client → MCP Server → PostgreSQL
+Dashboard / API Request  
+↓  
+Spring Boot AI Client  
+↓  
+Spring AI + Ollama  
+↓  
+MCP Client  
+↓  
+Payment MCP Server  
+↓  
+Payment Database (PostgreSQL)  
+↓  
+Transaction and Gateway Information  
+↓  
+AI-powered Payment Investigation  
+↓  
+Investigation Result
 
-The AI client retrieves transaction and gateway data through MCP tools, then combines that evidence with the user's question to generate an investigation response.
+## Key Capabilities
 
-## Prerequisites
+- Payment transaction investigation.
+- Transaction and gateway status retrieval.
+- AI-assisted payment failure analysis.
+- MCP-based communication between AI client and payment tools.
+- Payment event producer and simulator components.
 
-- Java 21
-- Maven
-- Ollama running locally with `qwen2.5:3b`
-- Payment AI MCP server running on port `8081`
+## Project Structure
 
-## Run Locally
-
-Start the application:
-
-```bash
-mvn spring-boot:run
+```text
+payment-ai-client/
+│
+├── src/
+│   └── main/
+│       └── java/
+│           └── com/tiru/
+│               ├── PaymentEvent.java
+│               ├── PaymentEventController.java
+│               ├── PaymentEventProducer.java
+│               └── PaymentEventSimulator.java
+│
+├── pom.xml
+└── README.md
 ```
 
-The client runs on port `8082`.
+## AI Model
 
-## API Endpoint
+The project uses Ollama to run Qwen 2.5 (3B) locally, avoiding dependency on paid cloud LLM APIs during development.
 
-`POST /api/ai/investigate`
+## Project Goal
 
-Example request:
+Build an intelligent payment operations system that goes beyond traditional transaction monitoring by combining AI reasoning, tool execution, and payment-system integration.
 
-```json
-{
-  "message": "Investigate TXN1001"
-}
-```
+## Future Enhancements
 
-Example local URL:
+- Proactive payment failure monitoring.
+- Kafka-based real-time event processing.
+- Intelligent anomaly detection.
+- Automated root-cause investigation.
+- AI-driven payment recovery recommendations.
+- Customer notification workflows.
 
-`http://localhost:8082/api/ai/investigate`
+## Author
 
-## Purpose
+**Tiru**
 
-This project demonstrates Spring Boot REST API development, MCP tool integration, local LLM integration, and evidence-based payment investigation.
-
-## Related Repositories
-
-- [MCP Server & Database](https://github.com/tirunath96/java-local-ai)
-- [React Dashboard](https://github.com/tirunath96/payment-ai-ui)
+Java | Spring Boot | Microservices | AI Engineering | MCP
